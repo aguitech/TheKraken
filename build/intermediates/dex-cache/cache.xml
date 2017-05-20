@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<items version="2" >
+
+    <item
+        is-multidex="true"
+        jar="/Users/hectoraguilar/Git/TheKraken/app/build/intermediates/incremental-runtime-classes/debug/instant-run.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="c82741bc129dd5f99f11a4ab8666ae24262053b6">
+        <dex dex="/Users/hectoraguilar/Git/TheKraken/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run_094dcc4400be99f92a349cd668e8dac9a2811797/classes.dex" />
+    </item>
+    <item
+        is-multidex="true"
+        jar="/Users/hectoraguilar/Git/TheKraken/app/build/intermediates/incremental-classes/debug/instant-run-bootstrap.jar"
+        jumboMode="true"
+        optimize="true"
+        revision="25.0.0"
+        sha1="ca2822d5035fa0df30a53e5adffec3677fe0a0e9">
+        <dex dex="/Users/hectoraguilar/Git/TheKraken/app/build/intermediates/transforms/dex/debug/folders/1000/10000/instant-run-bootstrap_05b01358bee245490f242874c585ba2a76b38bc3/classes.dex" />
+    </item>
+
+</items>
