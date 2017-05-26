@@ -292,7 +292,7 @@ public class Detalle_contrato extends AppCompatActivity {
                     e.printStackTrace();
                 }
             }
-            Log.i("INFO", response);
+            Log.i("INFO pagos", response);
         }
     }
     class RetrieveFeedTaskGet extends AsyncTask<Void, Void, String> {

@@ -25,7 +25,7 @@ import java.util.ArrayList;
 public class PagosAdapter extends BaseAdapter {
 
     ArrayList<String> _listaCantidadPago;
-    ArrayList<String> _listaFecha;
+    ArrayList<String> _listaFechaPago;
     ArrayList<String> _listaIdPago;
 
 
@@ -36,9 +36,9 @@ public class PagosAdapter extends BaseAdapter {
 
     private static LayoutInflater inflater=null;
 
-    public PagosAdapter(int valueID, Detalle_contrato mainActivity, ArrayList<String> listaCantidadPago, ArrayList<String> listaFecha, ArrayList<String> listaIdPago){
+    public PagosAdapter(int valueID, Detalle_contrato mainActivity, ArrayList<String> listaCantidadPago, ArrayList<String> listaFechaPago, ArrayList<String> listaIdPago){
         _listaCantidadPago = listaCantidadPago;
-        _listaFecha = listaFecha;
+        _listaFechaPago = listaFechaPago;
         _listaIdPago = listaIdPago;
 
         _valueID = valueID;
@@ -81,7 +81,7 @@ public class PagosAdapter extends BaseAdapter {
 
 
         holder.cantidad_pago.setText(_listaCantidadPago.get(i));
-        holder.fecha.setText(_listaFecha.get(i));
+        holder.fecha.setText(_listaFechaPago.get(i));
 
 
         /*
