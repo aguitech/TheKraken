@@ -46,6 +46,8 @@ public class Detalle_contrato extends AppCompatActivity {
     public static final String MyPREFERENCES = "MyPrefs";
     private int valueID = 0;
 
+    String idPersona;
+
     public static ArrayList<String> listaNombreVeterinarios = new ArrayList<String>();
     public static ArrayList<String> listaImagenVeterinarios = new ArrayList<String>();
     public static ArrayList<String> listaIdVeterinario = new ArrayList<String>();
@@ -77,6 +79,7 @@ public class Detalle_contrato extends AppCompatActivity {
         } else {
             //idString= extras.getString("idcliente");
             idString= extras.getString("idcontrato");
+            //idPersona=extras.getString("idpersona");
             Log.d("id_vet", idString);
 
         }
@@ -99,6 +102,8 @@ public class Detalle_contrato extends AppCompatActivity {
         */
         //_urlGet = "http://hyperion.init-code.com/zungu/app/vt_principal.php?id_editar=" + idString + "&idv=" + valueID + "&accion=true";
         //_urlGet = "http://thekrakensolutions.com/cobradores/android_get_cliente.php?id_editar=" + idString + "&idv=" + valueID + "&accion=true";
+        //_urlGet = "http://thekrakensolutions.com/cobradores/android_get_contrato.php?id_editar=" + idString + "&idv=" + valueID + "&accion=true";
+        //_urlGet = "http://thekrakensolutions.com/cobradores/android_get_contrato.php?id_persona=" + idPersona + "&idv=" + valueID + "&accion=true";
         _urlGet = "http://thekrakensolutions.com/cobradores/android_get_contrato.php?id_editar=" + idString + "&idv=" + valueID + "&accion=true";
         new Detalle_contrato.RetrieveFeedTaskGet().execute();
 
@@ -166,12 +171,31 @@ public class Detalle_contrato extends AppCompatActivity {
                 //TextView lblCedVo = (TextView) findViewById(R.id.txtCedA);
                 TextView txtDireccion = (TextView) findViewById(R.id.txtDireccion);
 
+
+
+
+
+
+
+                TextView txtTotalContrato = (TextView) findViewById(R.id.txtTotalContrato);
+                TextView txtTotalRestante = (TextView) findViewById(R.id.txtTotalRestante);
+                TextView txtTotalAbonado = (TextView) findViewById(R.id.txtTotalAbonado);
+                TextView txtCantidadPagos = (TextView) findViewById(R.id.txtCantidadPagos);
+                TextView txtPagoRequerido = (TextView) findViewById(R.id.txtPagoRequerido);
+
+                TextView txtPeriodoPago = (TextView) findViewById(R.id.txtPeriodoPago);
+                TextView txtDiaPago = (TextView) findViewById(R.id.txtDiaPago);
+                TextView txtFechaEstimadaFin = (TextView) findViewById(R.id.txtFechaEstimadaFin);
+                TextView txtUltimoPago = (TextView) findViewById(R.id.txtUltimoPago);
+
+
                 final ImageView fotoVeterinario = (ImageView) findViewById(R.id.imgVeterinario);
 
                 try {
 
                     JSONObject object = (JSONObject) new JSONTokener(response).nextValue();
 
+                    idPersona = object.getString("id_persona");
 
                     String _nombre_vo = object.getString("numero_cliente") + " - " + object.getString("nombre") + " " + object.getString("apaterno") + " " + object.getString("amaterno");
 
@@ -180,6 +204,65 @@ public class Detalle_contrato extends AppCompatActivity {
                     String _email_vo = object.getString("fecha_nacimiento");
                     //String _imagen_vo = object.getString("sexo");
                     String _imagen_vo = object.getString("imagen");
+
+                    String totalContrato = object.getString("total");
+                    String totalRestante = object.getString("cantidad_restante");
+                    String totalAbonado = object.getString("cantidad_pagada");
+                    String cantidadPagos = object.getString("cantidad_de_pagos") + " de " + object.getString("cantidad_pagos");
+                    String pagoRequerido = object.getString("cantidad_abono");
+
+                    String diaPago = "";
+
+                    String periodoPago = object.getString("frecuencia_pago");
+                    if(periodoPago.equals("SEMANAL")){
+                        if(object.getString("valor_semanal").equals("1")){
+                            diaPago = "Lunes";
+                        }
+                        if(object.getString("valor_semanal").equals("2")){
+                            diaPago = "Martes";
+                        }
+                        if(object.getString("valor_semanal").equals("3")){
+                            diaPago = "Miércoles";
+                        }
+                        if(object.getString("valor_semanal").equals("4")){
+                            diaPago = "Jueves";
+                        }
+                        if(object.getString("valor_semanal").equals("5")){
+                            diaPago = "Viernes";
+                        }
+                        if(object.getString("valor_semanal").equals("6")){
+                            diaPago = "Sábado";
+                        }
+                        if(object.getString("valor_semanal").equals("7")){
+                            diaPago = "Domingo";
+                        }
+                    }
+                    if(periodoPago.equals("QUINCENAL")){
+                        diaPago = object.getString("valor_quincenal_1") + " y " + object.getString("valor_quincenal_2");
+                    }
+                    if(periodoPago.equals("MENSUAL")){
+                        diaPago = object.getString("valor_mensual_1");
+                    }
+
+                    String fechaEstimadaFin = object.getString("fecha_estimada_fin");
+                    String ultimoPago = object.getString("cantidad_de_pagos") + " de " + object.getString("cantidad_pagos");
+
+
+                    txtTotalContrato.setText(totalContrato);
+                    txtTotalRestante.setText(totalRestante);
+                    txtTotalAbonado.setText(totalAbonado);
+                    txtCantidadPagos.setText(cantidadPagos);
+                    txtPagoRequerido.setText(pagoRequerido);
+
+                    txtPeriodoPago.setText(periodoPago);
+                    txtDiaPago.setText(diaPago);
+                    txtFechaEstimadaFin.setText(fechaEstimadaFin);
+                    txtUltimoPago.setText(ultimoPago);
+
+
+
+
+
 
 
                     //showMsg("tesst2");
@@ -363,6 +446,13 @@ public class Detalle_contrato extends AppCompatActivity {
         //i.putExtra("idcliente", _listaIdVeterinarios.get(i));
         //i.putExtra("idcliente", idString);
         i.putExtra("idcontrato", idString);
+        startActivity(i);
+    }
+    public void goDetalleCliente(View v){
+        Intent i = new Intent(Detalle_contrato.this, Detalle_cliente.class);
+        //i.putExtra("idcliente", _listaIdVeterinarios.get(i));
+        i.putExtra("idcliente", idString);
+        i.putExtra("idpersona", idPersona);
         startActivity(i);
     }
     public void goMenu(View v){

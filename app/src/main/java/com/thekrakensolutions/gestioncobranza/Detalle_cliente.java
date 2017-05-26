@@ -10,8 +10,13 @@ import android.support.v7.widget.RecyclerView;
 import android.util.Log;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.ListView;
 import android.widget.TextView;
 
+import com.thekrakensolutions.gestioncobranza.adapters.ContratosClienteAdapter;
+import com.thekrakensolutions.gestioncobranza.adapters.DireccionesAdapter;
+
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
@@ -20,6 +25,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.ArrayList;
 
 /**
  * Created by hectoraguilar on 07/03/17.
@@ -27,11 +33,23 @@ import java.net.URL;
 
 public class Detalle_cliente extends AppCompatActivity {
     private String _urlGet;
+    private String _urlGetContratos;
+    private String _urlGetDirecciones;
     private String _url;
     public static final String idu = "idu";
     SharedPreferences sharedpreferences;
     public static final String MyPREFERENCES = "MyPrefs";
     private int valueID = 0;
+
+
+    public static ArrayList<String> listaDirecciones = new ArrayList<String>();
+    public static ArrayList<String> listaIdDirecciones = new ArrayList<String>();
+
+    public static ArrayList<String> listaContrato = new ArrayList<String>();
+    public static ArrayList<String> listaIdContrato = new ArrayList<String>();
+
+    ListView lv;
+    ListView lv_contratos;
 
     public Detalle_cliente _activity = this;
     RecyclerView lvMascotas;
@@ -39,6 +57,12 @@ public class Detalle_cliente extends AppCompatActivity {
     private String _urlNotificaciones;
 
     String idString;
+    String idPersona;
+
+    public Detalle_cliente mActivity = this;
+    public DireccionesAdapter _mascotasAdapter;
+
+    public ContratosClienteAdapter _contratosAdapter;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,6 +77,7 @@ public class Detalle_cliente extends AppCompatActivity {
         } else {
             idString= extras.getString("idcliente");
             Log.d("id_vet", idString);
+            idPersona= extras.getString("idpersona");
 
         }
 
@@ -60,6 +85,9 @@ public class Detalle_cliente extends AppCompatActivity {
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         valueID = sharedpreferences.getInt("idu", 0);
 
+        lv = (ListView) findViewById(R.id.list_cliente_direccion);
+
+        lv_contratos = (ListView) findViewById(R.id.list_cliente_contrato);
         /*
         lvMascotas = (RecyclerView) findViewById(R.id.lvVeterinarios);
 
@@ -73,9 +101,185 @@ public class Detalle_cliente extends AppCompatActivity {
         new Detalle_veterinario.RetrieveFeedTaskNotificaciones().execute();
         */
         //_urlGet = "http://hyperion.init-code.com/zungu/app/vt_principal.php?id_editar=" + idString + "&idv=" + valueID + "&accion=true";
-        _urlGet = "http://thekrakensolutions.com/cobradores/android_get_cliente.php?id_editar=" + idString + "&idv=" + valueID + "&accion=true";
+        _urlGet = "http://thekrakensolutions.com/cobradores/android_get_cliente.php?id_persona=" + idPersona + "&accion=true";
         new Detalle_cliente.RetrieveFeedTaskGet().execute();
 
+        //_url = "http://thekrakensolutions.com/cobradores/android_get_contratos.php?id=" + Integer.toString(valueID);
+        //_url = "http://thekrakensolutions.com/cobradores/android_get_direcciones.php?id=" + Integer.toString(valueID);
+        //_urlGetDirecciones = "http://thekrakensolutions.com/cobradores/android_get_direcciones.php?id=" + Integer.toString(valueID);
+        _urlGetDirecciones = "http://thekrakensolutions.com/cobradores/android_get_direcciones.php?id=" + idPersona;
+        Log.d("url_direcciones", _urlGetDirecciones);
+        new Detalle_cliente.RetrieveFeedTask().execute();
+
+        _urlGetContratos = "http://thekrakensolutions.com/cobradores/android_get_contratos_cliente.php?id=" + idPersona;
+        Log.d("url_direcciones", _urlGetContratos);
+        new Detalle_cliente.RetrieveFeedTaskContratos().execute();
+        //_urlGetContratos =
+    }
+    class RetrieveFeedTask extends AsyncTask<Void, Void, String> {
+
+        private Exception exception;
+
+        protected void onPreExecute() {
+        }
+
+        protected String doInBackground(Void... urls) {
+            try {
+                Log.i("INFO url: ", _urlGetDirecciones);
+                URL url = new URL(_urlGetDirecciones);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String response) {
+            if(response == null) {
+                response = "THERE WAS AN ERROR";
+            } else {
+                try {
+                    JSONTokener tokener = new JSONTokener(response);
+                    JSONArray arr = new JSONArray(tokener);
+
+                    listaDirecciones.clear();
+                    listaIdDirecciones.clear();
+
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject jsonobject = arr.getJSONObject(i);
+
+                        /*
+                        listaNombreVeterinarios.add(jsonobject.getString("nombre"));
+                        listaImagenVeterinarios.add(jsonobject.getString("foto"));
+                        listaIdVeterinario.add(jsonobject.getString("id_veterinario"));
+                        */
+                        //listaImagenVeterinarios.add(jsonobject.getString("foto"));
+
+                        /*
+                        listaNombreVeterinarios.add(jsonobject.getString("numero_cliente") + " " + jsonobject.getString("nombre") + " " + jsonobject.getString("apaterno"));
+
+                        listaImagenVeterinarios.add(jsonobject.getString("imagen"));
+                        listaIdVeterinario.add(jsonobject.getString("id_cliente"));
+                        */
+                        listaDirecciones.add(jsonobject.getString("calle"));
+
+                        Log.d("valor", jsonobject.getString("calle"));
+                        listaIdDirecciones.add(jsonobject.getString("id_direccion"));
+                        //listaIdVeterinario.add(jsonobject.getString("total"));
+
+                    }
+
+
+                    _mascotasAdapter = new DireccionesAdapter(valueID, mActivity, listaDirecciones, listaIdDirecciones);
+                    lv.setAdapter(_mascotasAdapter);
+
+                    /*
+                    _contratosAdapter = new ContratosClienteAdapter(valueID, mActivity, listaContrato, listaIdContrato);
+                    lv_contratos.setAdapter(_contratosAdapter);
+
+                    */
+
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.i("INFO", response);
+        }
+    }
+    class RetrieveFeedTaskContratos extends AsyncTask<Void, Void, String> {
+
+        private Exception exception;
+
+        protected void onPreExecute() {
+        }
+
+        protected String doInBackground(Void... urls) {
+            try {
+                Log.i("INFO url: ", _urlGetContratos);
+                URL url = new URL(_urlGetContratos);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String response) {
+            if(response == null) {
+                response = "THERE WAS AN ERROR";
+            } else {
+                try {
+                    JSONTokener tokener = new JSONTokener(response);
+                    JSONArray arr = new JSONArray(tokener);
+
+                    listaContrato.clear();
+                    listaIdContrato.clear();
+
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject jsonobject = arr.getJSONObject(i);
+
+                        /*
+                        listaNombreVeterinarios.add(jsonobject.getString("nombre"));
+                        listaImagenVeterinarios.add(jsonobject.getString("foto"));
+                        listaIdVeterinario.add(jsonobject.getString("id_veterinario"));
+                        */
+                        //listaImagenVeterinarios.add(jsonobject.getString("foto"));
+
+                        /*
+                        listaNombreVeterinarios.add(jsonobject.getString("numero_cliente") + " " + jsonobject.getString("nombre") + " " + jsonobject.getString("apaterno"));
+
+                        listaImagenVeterinarios.add(jsonobject.getString("imagen"));
+                        listaIdVeterinario.add(jsonobject.getString("id_cliente"));
+                        */
+                        listaContrato.add(jsonobject.getString("numero_contrato"));
+
+                        //Log.d("valor", jsonobject.getString("calle"));
+                        listaIdContrato.add(jsonobject.getString("id_contrato"));
+                        //listaIdVeterinario.add(jsonobject.getString("total"));
+
+                    }
+
+/*
+                    _mascotasAdapter = new DireccionesAdapter(valueID, mActivity, listaDirecciones, listaIdDirecciones);
+                    lv.setAdapter(_mascotasAdapter);
+
+                   */
+                    _contratosAdapter = new ContratosClienteAdapter(valueID, mActivity, listaContrato, listaIdContrato);
+                    lv_contratos.setAdapter(_contratosAdapter);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.i("INFO", response);
+        }
     }
     class RetrieveFeedTaskGet extends AsyncTask<Void, Void, String> {
 
@@ -132,13 +336,43 @@ public class Detalle_cliente extends AppCompatActivity {
 
                     String _nombre_vo = object.getString("numero_cliente") + " - " + object.getString("nombre") + " " + object.getString("apaterno") + " " + object.getString("amaterno");
 
-                    String _telefono_vo = object.getString("telefono_casa");
+                    //String _telefono_vo = object.getString("telefono_casa");
                     String _cedula_vo = object.getString("numero_cliente");
                     String _email_vo = object.getString("fecha_nacimiento");
-                    String _imagen_vo = object.getString("sexo");
+                    //String _imagen_vo = object.getString("sexo");
+                    String _imagen_vo = object.getString("imagen");
+
+
+                    if(_nombre_vo.length() > 3)
+                        lblNombreVo.setText(_nombre_vo);
+
+                    if(_email_vo.length() > 3)
+                        lblEmailVo.setText(_email_vo);
+
+                    /*
+                    if(_telefono_vo.length() > 3)
+                        lblCelVo.setText(_telefono_vo);
+
+                    */
+                    /*
+                    if(_cedula_vo.length() > 3)
+                        lblCedVo.setText(_cedula_vo);
+                        */
+
+
+                    //DIRECCION
+                    //String txtDireccion_ = object.getString("calle") + " " + object.getString("numero_exterior") + " " + object.getString("numero_interior")  + " , Colonia " + object.getString("colonia")  + " , Delegación/Municipio " + object.getString("delegacion_municipio")  + " , Estado " + object.getString("estado")  + " , C.P. " + object.getString("codigo_postal")  + " , País " + object.getString("pais")  + " , entre calle " + object.getString("entre_calle")  + " y calle " + object.getString("y_calle")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno");
+                    //String txtDireccion_ = object.getString("calle") + " " + object.getString("numero_exterior") + " " + object.getString("numero_interior")  + " , Colonia " + object.getString("colonia")  + " , Delegación/Municipio " + object.getString("delegacion_municipio")  + " , Estado " + object.getString("estado")  + " , C.P. " + object.getString("codigo_postal")  + " , País " + object.getString("pais")  + " , entre calle " + object.getString("entre_calle")  + " y calle " + object.getString("y_calle");
+
+                    /** FUNCIONA AL PARECER CORRECTAMENTE
+                    String txtDireccion_ = object.getString("calle") + " " + object.getString("numero_exterior") + " " + object.getString("numero_interior")  + " , Colonia " + object.getString("colonia")  + " , Delegación/Municipio " + object.getString("poblacion")  + " , Estado " + object.getString("estado")  + " , C.P. " + object.getString("codigo_postal")  + " , País " + object.getString("pais");
+
+                    if(txtDireccion_.length() > 3)
+                        txtDireccion.setText(txtDireccion_);
+                    */
 
                     //String txtDireccion_ = object.getString("calle") + " " + object.getString("numero_exterior") + " " + object.getString("numero_interior")  + " , Colonia " + object.getString("colonia")  + " , Delegación/Municipio " + object.getString("delegacion_municipio")  + " , Estado " + object.getString("estado")  + " , C.P. " + object.getString("codigo_postal")  + " , País " + object.getString("pais")  + " , entre calle " + object.getString("entre_calle")  + " y calle " + object.getString("y_calle")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno")  + " " + object.getString("amaterno");
-                    String txtDireccion_ = object.getString("calle") + " " + object.getString("numero_exterior") + " " + object.getString("numero_interior")  + " , Colonia " + object.getString("colonia")  + " , Delegación/Municipio " + object.getString("delegacion_municipio")  + " , Estado " + object.getString("estado")  + " , C.P. " + object.getString("codigo_postal")  + " , País " + object.getString("pais")  + " , entre calle " + object.getString("entre_calle")  + " y calle " + object.getString("y_calle");
+                    //String txtDireccion_ = object.getString("calle") + " " + object.getString("numero_exterior") + " " + object.getString("numero_interior")  + " , Colonia " + object.getString("colonia")  + " , Delegación/Municipio " + object.getString("delegacion_municipio")  + " , Estado " + object.getString("estado")  + " , C.P. " + object.getString("codigo_postal")  + " , País " + object.getString("pais")  + " , entre calle " + object.getString("entre_calle")  + " y calle " + object.getString("y_calle");
 
                     /*
                     {"id_cliente":"1","cliente":"","numero_cliente":"0","fecha_nacimiento":"0000-00-00","sexo":"mkl","imagen":"",":"klmkl","":"mkl","":"mklm","":"klm","":"klmkl","telefono_casa":"","telefono_celular":"","telefono_oficina":"","":"","":"","ocupacion":"","direccion_trabajo":"","nombre_pareja":"","ocupacion_pareja":"","telefono_pareja":"","complexion":"","estatura":"","tez":"","edad_rango":"","cabello":"","color_cabello":"","tipo_identificacion":"","numero_identificacion":"","nombre_referencia_1":"","direccion_referencia_1":"","telefono_referencia_1":"","parentesco_referencia_1":"","anios_conocerce_referencia_1":"","nombre_referencia_2":"","direccion_referencia_2":"","telefono_referencia_2":"","parentesco_referencia_2":"","anios_conocerce_referencia_2":"","maps_localizacion":"","imagen_plano_localizacion":"","fachada_casa":"","a_lado_casa":"","enfrente_casa":"","autorizacion_contratos":"","id_creador":"0","id_empresa":"0"}
@@ -150,6 +384,7 @@ public class Detalle_cliente extends AppCompatActivity {
                     String _email_vo = object.getString("email_veterinario");
                     String _imagen_vo = object.getString("imagen_veterinario");
                     */
+                    /*
 
                     if(_nombre_vo.length() > 3)
                         lblNombreVo.setText(_nombre_vo);
@@ -159,14 +394,16 @@ public class Detalle_cliente extends AppCompatActivity {
 
                     if(_telefono_vo.length() > 3)
                         lblCelVo.setText(_telefono_vo);
-
+*/
                     /*
                     if(_cedula_vo.length() > 3)
                         lblCedVo.setText(_cedula_vo);
-                        */
 
                     if(txtDireccion_.length() > 3)
                         txtDireccion.setText(txtDireccion_);
+
+                        */
+
 
 
 

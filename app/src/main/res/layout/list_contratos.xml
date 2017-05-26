@@ -18,7 +18,13 @@
             android:gravity="center"
             android:orientation="horizontal"
             android:layout_height="wrap_content">
-
+            <ImageView
+                android:layout_width="40dp"
+                android:adjustViewBounds="true"
+                android:scaleType="fitStart"
+                android:layout_height="match_parent"
+                android:id="@+id/imgVeterinario" />
+            <!--
             <ImageView
                 android:layout_width="40dp"
                 android:adjustViewBounds="true"
@@ -26,6 +32,7 @@
                 android:src="@drawable/animal_notifiaciones"
                 android:layout_height="match_parent"
                 android:id="@+id/imgVeterinario" />
+            -->
         </LinearLayout>
 
         <LinearLayout
