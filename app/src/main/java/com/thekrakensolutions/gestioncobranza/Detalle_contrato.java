@@ -21,6 +21,7 @@ import android.widget.Toast;
 import com.squareup.picasso.Callback;
 import com.squareup.picasso.Picasso;
 import com.thekrakensolutions.gestioncobranza.adapters.PagosAdapter;
+import com.thekrakensolutions.gestioncobranza.adapters.ProductosAdapter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -39,7 +40,12 @@ import java.util.ArrayList;
 
 public class Detalle_contrato extends AppCompatActivity {
     ListView lv;
+    ListView lv_pagos;
+    ListView lv_productos;
+
     private String _urlGet;
+    private String _urlGetProductos;
+    private String _urlGetPagos;
     private String _url;
     public static final String idu = "idu";
     SharedPreferences sharedpreferences;
@@ -52,8 +58,22 @@ public class Detalle_contrato extends AppCompatActivity {
     public static ArrayList<String> listaImagenVeterinarios = new ArrayList<String>();
     public static ArrayList<String> listaIdVeterinario = new ArrayList<String>();
 
+    public static ArrayList<String> listaCantidad = new ArrayList<String>();
+    public static ArrayList<String> listaProducto = new ArrayList<String>();
+    public static ArrayList<String> listaCostoUnitario = new ArrayList<String>();
+    public static ArrayList<String> listaCostoTotal = new ArrayList<String>();
+    public static ArrayList<String> listaIdProducto = new ArrayList<String>();
+
+    public static ArrayList<String> listaCantidadPago = new ArrayList<String>();
+    public static ArrayList<String> listaFechaPago = new ArrayList<String>();
+    public static ArrayList<String> listaIdPago = new ArrayList<String>();
+
+
     public Detalle_contrato mActivity = this;
-    public PagosAdapter _mascotasAdapter;
+    public PagosAdapter _pagosAdapter;
+    public ProductosAdapter _productosAdapter;
+
+
 
     public Detalle_contrato _activity = this;
     RecyclerView lvMascotas;
@@ -88,6 +108,8 @@ public class Detalle_contrato extends AppCompatActivity {
         sharedpreferences = getSharedPreferences(MyPREFERENCES, Context.MODE_PRIVATE);
         valueID = sharedpreferences.getInt("idu", 0);
 
+        lv_pagos = (ListView) findViewById(R.id.list_pagos_contrato);
+        lv_productos = (ListView) findViewById(R.id.list_venta_contrato);
         /*
         lvMascotas = (RecyclerView) findViewById(R.id.lvVeterinarios);
 
@@ -108,6 +130,14 @@ public class Detalle_contrato extends AppCompatActivity {
         new Detalle_contrato.RetrieveFeedTaskGet().execute();
 
 
+        _urlGetPagos = "http://thekrakensolutions.com/cobradores/android_get_pagos.php?id_editar=" + idString;
+        Log.d("url_pagos", _urlGetPagos);
+        new Detalle_contrato.RetrieveFeedTaskPago().execute();
+
+        _urlGetProductos = "http://thekrakensolutions.com/cobradores/android_get_productos.php?id_editar=" + idString;
+        Log.d("url_productos", _urlGetProductos);
+        new Detalle_contrato.RetrieveFeedTaskProducto().execute();
+
         /**
         _url = "http://thekrakensolutions.com/cobradores/android_get_contratos.php?id=" + Integer.toString(valueID);
         Log.d("url_veterinarios", _url);
@@ -121,6 +151,149 @@ public class Detalle_contrato extends AppCompatActivity {
 
         Toast toast = Toast.makeText(context, text, duration);
         toast.show();
+    }
+    class RetrieveFeedTaskProducto extends AsyncTask<Void, Void, String> {
+
+        private Exception exception;
+
+        protected void onPreExecute() {
+        }
+
+        protected String doInBackground(Void... urls) {
+            try {
+                Log.i("INFO url: ", _urlGetProductos);
+                URL url = new URL(_urlGetProductos);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String response) {
+            if(response == null) {
+                response = "THERE WAS AN ERROR";
+            } else {
+                try {
+                    JSONTokener tokener = new JSONTokener(response);
+                    JSONArray arr = new JSONArray(tokener);
+
+                    listaCantidad.clear();
+                    listaProducto.clear();
+                    listaCostoUnitario.clear();
+                    listaCostoTotal.clear();
+                    listaIdProducto.clear();
+
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject jsonobject = arr.getJSONObject(i);
+
+                        listaCantidad.add(jsonobject.getString("cantidad"));
+                        listaProducto.add(jsonobject.getString("concepto"));
+                        listaCostoUnitario.add(jsonobject.getString("costo_unitario"));
+                        listaCostoTotal.add(jsonobject.getString("costo_concepto"));
+                        listaIdProducto.add(jsonobject.getString("id_contrato_producto"));
+
+                    }
+
+/*
+                    _mascotasAdapter = new DireccionesAdapter(valueID, mActivity, listaDirecciones, listaIdDirecciones);
+                    lv.setAdapter(_mascotasAdapter);
+
+                   */
+                    /*
+                    _pagosAdapter = new PagosAdapter(valueID, mActivity, listaCantidad, listaProducto, listaCostoUnitario, listaCostoTotal, listaIdPago);
+                    lv_pagos.setAdapter(_pagosAdapter);
+                    */
+                    _productosAdapter = new ProductosAdapter(valueID, mActivity, listaCantidad, listaProducto, listaCostoUnitario, listaCostoTotal, listaIdProducto);
+                    lv_productos.setAdapter(_productosAdapter);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.i("INFO", response);
+        }
+    }
+    class RetrieveFeedTaskPago extends AsyncTask<Void, Void, String> {
+
+        private Exception exception;
+
+        protected void onPreExecute() {
+        }
+
+        protected String doInBackground(Void... urls) {
+            try {
+                Log.i("INFO url: ", _urlGetPagos);
+                URL url = new URL(_urlGetPagos);
+                HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
+                try {
+                    BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(urlConnection.getInputStream()));
+                    StringBuilder stringBuilder = new StringBuilder();
+                    String line;
+                    while ((line = bufferedReader.readLine()) != null) {
+                        stringBuilder.append(line).append("\n");
+                    }
+                    bufferedReader.close();
+                    return stringBuilder.toString();
+                }
+                finally{
+                    urlConnection.disconnect();
+                }
+            }
+            catch(Exception e) {
+                Log.e("ERROR", e.getMessage(), e);
+                return null;
+            }
+        }
+
+        protected void onPostExecute(String response) {
+            if(response == null) {
+                response = "THERE WAS AN ERROR";
+            } else {
+                try {
+                    JSONTokener tokener = new JSONTokener(response);
+                    JSONArray arr = new JSONArray(tokener);
+
+                    listaCantidadPago.clear();
+                    listaFechaPago.clear();
+
+                    for (int i = 0; i < arr.length(); i++) {
+                        JSONObject jsonobject = arr.getJSONObject(i);
+
+                        listaCantidadPago.add(jsonobject.getString("cantidad_pago"));
+
+                        //Log.d("valor", jsonobject.getString("calle"));
+                        listaFechaPago.add(jsonobject.getString("fecha_pago"));
+                        //listaIdVeterinario.add(jsonobject.getString("total"));
+
+                    }
+
+/*
+                    _mascotasAdapter = new DireccionesAdapter(valueID, mActivity, listaDirecciones, listaIdDirecciones);
+                    lv.setAdapter(_mascotasAdapter);
+
+                   */
+                    _pagosAdapter = new PagosAdapter(valueID, mActivity, listaCantidadPago, listaFechaPago, listaIdPago);
+                    lv_pagos.setAdapter(_pagosAdapter);
+                } catch (Exception e) {
+                    e.printStackTrace();
+                }
+            }
+            Log.i("INFO", response);
+        }
     }
     class RetrieveFeedTaskGet extends AsyncTask<Void, Void, String> {
 

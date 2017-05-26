@@ -1,23 +1,14 @@
 package com.thekrakensolutions.gestioncobranza.adapters;
 
 import android.content.Context;
-import android.content.Intent;
-import android.graphics.Bitmap;
-import android.graphics.drawable.BitmapDrawable;
 import android.os.AsyncTask;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawable;
-import android.support.v4.graphics.drawable.RoundedBitmapDrawableFactory;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
-import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.TextView;
 
-import com.squareup.picasso.Callback;
-import com.squareup.picasso.Picasso;
 import com.thekrakensolutions.gestioncobranza.Detalle_contrato;
 import com.thekrakensolutions.gestioncobranza.R;
 
@@ -33,9 +24,11 @@ import java.util.ArrayList;
 
 public class PagosAdapter extends BaseAdapter {
 
-    ArrayList<String> _listaNombreVeterinarios;
-    ArrayList<String> _listaImagenVeterinarios;
-    ArrayList<String> _listaIdVeterinarios;
+    ArrayList<String> _listaCantidadPago;
+    ArrayList<String> _listaFecha;
+    ArrayList<String> _listaIdPago;
+
+
     Context context;
     public String _url;
     public String _urlGo;
@@ -43,10 +36,11 @@ public class PagosAdapter extends BaseAdapter {
 
     private static LayoutInflater inflater=null;
 
-    public PagosAdapter(int valueID, Detalle_contrato mainActivity, ArrayList<String> listaNombreVeterinarios, ArrayList<String> listaImagenVeterinarios, ArrayList<String> listaIdVeterinarios){
-        _listaIdVeterinarios = listaIdVeterinarios;
-        _listaImagenVeterinarios = listaImagenVeterinarios;
-        _listaNombreVeterinarios = listaNombreVeterinarios;
+    public PagosAdapter(int valueID, Detalle_contrato mainActivity, ArrayList<String> listaCantidadPago, ArrayList<String> listaFecha, ArrayList<String> listaIdPago){
+        _listaCantidadPago = listaCantidadPago;
+        _listaFecha = listaFecha;
+        _listaIdPago = listaIdPago;
+
         _valueID = valueID;
 
         context = mainActivity;
@@ -55,7 +49,7 @@ public class PagosAdapter extends BaseAdapter {
 
     @Override
     public int getCount() {
-        return _listaIdVeterinarios.size();
+        return _listaIdPago.size();
     }
 
     @Override
@@ -69,10 +63,8 @@ public class PagosAdapter extends BaseAdapter {
     }
 
     public class Holder{
-        TextView nombreVeterinario;
-        ImageView imagenVeterinario;
-        Button agregarVeterinario;
-        ImageView detalleVeterinario;
+        TextView cantidad_pago;
+        TextView fecha;
     }
 
     @Override
@@ -80,13 +72,17 @@ public class PagosAdapter extends BaseAdapter {
 
         final Holder holder = new Holder();
         final View rowView;
-        rowView = inflater.inflate(R.layout.list_contratos, null);
+        rowView = inflater.inflate(R.layout.list_pagos, null);
         final int pos = i;
 
-        holder.nombreVeterinario = (TextView) rowView.findViewById(R.id.txtNombreVeterinario);
-        holder.imagenVeterinario = (ImageView) rowView.findViewById(R.id.imgVeterinario);
-        //holder.agregarVeterinario = (Button) rowView.findViewById(R.id.buttonAgregar);
-        holder.detalleVeterinario = (ImageView) rowView.findViewById(R.id.imgDetalle);
+        holder.cantidad_pago = (TextView) rowView.findViewById(R.id.txtCantidadPago);
+        holder.fecha = (TextView) rowView.findViewById(R.id.txtFechaPago);
+
+
+
+        holder.cantidad_pago.setText(_listaCantidadPago.get(i));
+        holder.fecha.setText(_listaFecha.get(i));
+
 
         /*
 
@@ -100,6 +96,7 @@ public class PagosAdapter extends BaseAdapter {
         });
         */
 
+        /*
         holder.detalleVeterinario.setOnClickListener(new View.OnClickListener(){
             public void onClick(View v) {
                 //_urlGo = "http://hyperion.init-code.com/zungu/app/vt_agregar_id_veterinario.php?idu=" + Integer.toString(_valueID) + "&idv=" + _listaIdVeterinarios.get(pos);
@@ -127,8 +124,10 @@ public class PagosAdapter extends BaseAdapter {
 
             }
         });
+        */
 
-        holder.nombreVeterinario.setText(_listaNombreVeterinarios.get(i));
+
+        /*
         _url = "http://hyperion.init-code.com/zungu/imagen_establecimiento/" + _listaImagenVeterinarios.get(i);
         Log.d("url", _url);
         Log.d("entro", "sii");
@@ -148,6 +147,7 @@ public class PagosAdapter extends BaseAdapter {
 
                     }
                 });
+        */
 
         return rowView;
     }
